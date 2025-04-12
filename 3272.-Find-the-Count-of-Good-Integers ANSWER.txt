@@ -1,0 +1,46 @@
+from collections import Counter
+
+class Solution:
+    def countGoodIntegers(self, n, k):
+        def generate_palindromes(n):
+            palindromes = []
+            half_len = (n + 1) // 2
+            start = 10**(half_len - 1)
+            end = 10**half_len
+            for half in range(start, end):
+                half_str = str(half)
+                if n % 2 == 0:
+                    full_str = half_str + half_str[::-1]
+                else:
+                    full_str = half_str + half_str[:-1][::-1]
+                palindromes.append(int(full_str))
+            return palindromes
+
+        palindromes = generate_palindromes(n)
+        valid_digit_counts = set()
+        
+        for p in palindromes:
+            if p % k == 0:
+                digit_count = tuple(sorted(Counter(str(p)).items()))
+                valid_digit_counts.add(digit_count)
+        
+        digits = '0123456789'
+        good_count = [0]  # mutable container to avoid nonlocal
+
+        def backtrack(pos, counter):
+            if pos == n:
+                digit_count = tuple(sorted(counter.items()))
+                if digit_count in valid_digit_counts:
+                    good_count[0] += 1
+                return
+            for d in digits:
+                if pos == 0 and d == '0':
+                    continue
+                counter[d] += 1
+                backtrack(pos + 1, counter)
+                counter[d] -= 1
+                if counter[d] == 0:
+                    del counter[d]
+
+        backtrack(0, Counter())
+        return good_count[0]
